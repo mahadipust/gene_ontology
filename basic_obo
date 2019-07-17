@@ -1,0 +1,135 @@
+import networkx
+
+import obonet
+
+
+
+# Read the  ontology
+
+url = 'http://purl.obolibrary.org/obo/go/go-basic.obo'
+
+graph = obonet.read_obo(url)
+
+
+
+
+
+
+
+# Number of nodes
+
+print(len(graph))
+
+print('\n')
+
+
+
+
+
+graph.number_of_edges()
+
+
+
+networkx.is_directed_acyclic_graph(graph)
+
+
+
+graph.node['GO:0006909']
+
+#retriving data from a node
+
+
+
+# Retreive properties of another node
+
+graph.node['GO:0009418']
+
+
+
+
+
+##### 
+
+#Create name mappings
+
+
+
+##Note that for some OBO ontologies, some nodes only have an id and not a name (see issue).
+
+
+
+
+
+id_to_name = {id_: data.get('name') for id_, data in graph.nodes(data=True)}
+
+name_to_id = {data['name']: id_ for id_, data in graph.nodes(data=True) if 'name' in data}
+
+
+
+# Get the name for GO:0042552
+
+id_to_name['GO:0042552']
+
+
+
+# Get the id for myelination
+
+name_to_id['myelination']
+
+
+
+
+
+##Parent child reltationships
+
+# Find edges to parent terms
+
+node = name_to_id['pilus part']
+
+for child, parent, key in graph.out_edges(node, keys=True):
+
+    print(f'• {id_to_name[child]} ⟶ {key} ⟶ {id_to_name[parent]}')
+
+    
+
+# Find edges to children terms
+
+node = name_to_id['pilus part']
+
+for parent, child, key in graph.in_edges(node, keys=True):
+
+    print(f'• {id_to_name[child]} ⟵ {key} ⟵ {id_to_name[parent]}')
+
+    
+
+##Find all superterms of myelination
+
+sorted(id_to_name[superterm] for superterm in networkx.descendants(graph, 'GO:0042552'))
+
+
+
+
+
+##Find all subterms of myelination
+
+sorted(id_to_name[subterm] for subterm in networkx.ancestors(graph, 'GO:0042552'))
+
+
+
+##Find all paths to the root
+
+paths = networkx.all_simple_paths(
+
+    graph,
+
+    source=name_to_id['starch binding'],
+
+    target=name_to_id['molecular_function']
+
+)
+
+for path in paths:
+
+    print('•', ' ⟶ '.join(id_to_name[node] for node in path))
+
+    
